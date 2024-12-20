@@ -30,6 +30,8 @@ function createCube() {
     const geometry = new THREE.BoxGeometry(1, 1, 1);
     const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
     const cube = new THREE.Mesh(geometry, material);
+    // 渲染体颜色太浅，贴图图片翻转，要对立方体进行一个缩放
+    cube.scale.set(1, 1, -1)
     scene.add(cube);
     return cube;
 }
@@ -38,13 +40,12 @@ function createCube() {
 // 创建贴图函数
 function setMaterialCube(infoObj) {
     const { publicPath, imgUrlArr, markList } = infoObj
-    console.log('publicPath', imgUrlArr);
     // 加载2d 纹理
     const textureLoader = new THREE.TextureLoader()
     textureLoader.setPath(publicPath)
 
     // 遍历贴图
-    const materialArr = imgUrlArr.map( imgStr => {
+    const materialArr = imgUrlArr.map(imgStr => {
         const texture = textureLoader.load(imgStr);
         texture.colorSpace = THREE.SRGBColorSpace
         return new THREE.MeshBasicMaterial({
