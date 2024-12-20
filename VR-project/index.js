@@ -1,5 +1,6 @@
 import { scene } from './utils/main.js'
 import * as THREE from 'three'
+import guiMove from './utils/gui'
 
 // 1. 创建场景信息  数据影响视图
 // 2. 定义数据对象相关的属性和值
@@ -18,8 +19,8 @@ const sceneInfoObj = {
                 name: 'landMark',
                 imgUrl: 'other/landmark.png',
                 wh: [0.05, 0.05], // 平面宽高
-                position: [0, 0, 0],
-                rotation: [0, 0, 0], //旋转角度
+                position: [-0.21, -0.16, -0.12],
+                rotation: [1.61, 0, 0], //旋转角度
                 targetAttr: 'two'
             }
         ]
@@ -80,7 +81,12 @@ function setLardMarkFn(markData) {
         transparent: true,
     })
     const plane = new THREE.Mesh(geometry, material);
+    plane.position.set(...position)
+    plane.rotation.set(...rotation)
+
     scene.add(plane);
+    // guiMove 
+    // guiMove(plane);
 }
 
 const myCube = createCube();
