@@ -1,13 +1,13 @@
 import { camera, scene } from './utils/main.js'
 import * as THREE from 'three'
 import guiMove from './utils/gui'
-
 // 1. 创建场景信息  数据影响视图
 // 2. 定义数据对象相关的属性和值
 // 3. 创建纹理贴图函数
 // 4. 地上热点标记函数
 // 5. dat.gui 工具函数调整位置
 // 准备贴图
+let count = 0;
 const sceneInfoObj = {
     // 第一个场景
     one: {
@@ -34,16 +34,16 @@ const sceneInfoObj = {
                 name: 'landMark',
                 imgUrl: 'other/landmark.png',
                 wh: [0.05, 0.05], // 平面宽高
-                position: [0, 0, 0],
-                rotation: [0, 0, 0], //旋转角度
-                targetAttr: 'one'
+                position: [-0.36, -0.16, -0.16],
+                rotation: [1.55, 0, 0], //旋转角度
+                targetAttr: 'three'
             },
             {
                 name: 'landMark',
                 imgUrl: 'other/landmark.png',
                 wh: [0.05, 0.05], // 平面宽高
-                position: [0, -0.16, -0.12],
-                rotation: [1.61, 0, 0], //旋转角度
+                position: [0.42, -0.25, -0.25],
+                rotation: [1.55, 0, 0], //旋转角度
                 targetAttr: 'one'
             }
         ]
@@ -62,9 +62,19 @@ function createCube() {
     return cube;
 }
 
+// Group 组的概念
+// 使得组中对象在语法上的结构更加清晰。
+// Group  group.add(a)
+// 获取 group 中的对象，可以通过遍历 group.children
+//  数组来查找特定的对象。每个子对象都有一个唯一的 id 属性和可能的自定义属性
+const group = new THREE.Group() // 定义一个群
+
 // 准备创建纹理贴图函数
 // 创建贴图函数
 function setMaterialCube(infoObj) {
+    // 应该在每次切换纹理前，清除之前的地标
+    removeLardMarkFn();
+
     const { publicPath, imgUrlArr, markList } = infoObj
     // 加载2d 纹理
     const textureLoader = new THREE.TextureLoader()
@@ -88,8 +98,12 @@ function setMaterialCube(infoObj) {
         if (item.name === 'landMark') setLardMarkFn(item);
     });
 
+    // TODO 不知道咋
+    // scene.add(group);
 }
 
+// 地标贴图函数
+// TODO  这里还可以有一种其他思路
 function setLardMarkFn(markData) {
     const { imgUrl, wh, position, rotation, targetAttr } = markData
     // 创建 geometry 与 material
@@ -111,10 +125,23 @@ function setLardMarkFn(markData) {
 
     // 设置自定义属性，方便点击遍历的时候，知道切换到哪一个场景
     plane.userData.attr = targetAttr
-
-    scene.add(plane);
+    group.add(plane);
+    scene.add(group);
     // guiMove 
-    // guiMove(plane);
+    guiMove(plane);
+}
+
+// 移除地标贴图函数
+function removeLardMarkFn() {
+    console.log('99', count++, group.children);
+    if (group.children.length > 0) {
+        const copyGroup = [...group.children];
+        copyGroup.forEach(item => {
+            item.geometry.dispose();
+            item.material.dispose();
+            group.remove(item)
+        })
+    }
 }
 
 // 点击函数
@@ -131,7 +158,8 @@ function bindClick() {
         raycaster.setFromCamera(pointer, camera);
         // 计算物体和射线的焦点,返回一个包含所有相交结果的数组 (intersects
         const intersects = raycaster.intersectObjects(scene.children);
-        //         该方法返回一个包含所有相交结果的数组 (intersects)。每个元素都是一个对象，包含了关于交点的详细信息，如：
+
+        //  该方法返回一个包含所有相交结果的数组 (intersects)。每个元素都是一个对象，包含了关于交点的详细信息，如：
         // point：交点的世界坐标。
         // object：被击中的3D对象。
         // distance：从射线起点到交点的距离。
@@ -139,11 +167,15 @@ function bindClick() {
         // uv（如果适用）：交点在纹理上的 UV 坐标。
         console.log('intersects', intersects);
         const markOBJ = intersects.find((item) => item.object.name === 'mark')
+
         // 点击之后，切换纹理
         // const infoObj = sceneInfoObj
         // 切换贴图场景
-        const nextScene = markOBJ.object.userData.attr
-        setMaterialCube(sceneInfoObj[nextScene]);
+
+        let nextScene;
+        if (nextScene = markOBJ?.object.userData.attr) {
+            setMaterialCube(sceneInfoObj[nextScene]);
+        }
     })
 }
 
