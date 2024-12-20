@@ -1,4 +1,4 @@
-import { scene } from './utils/main.js'
+import { camera, scene } from './utils/main.js'
 import * as THREE from 'three'
 import guiMove from './utils/gui'
 
@@ -22,6 +22,29 @@ const sceneInfoObj = {
                 position: [-0.21, -0.16, -0.12],
                 rotation: [1.61, 0, 0], //旋转角度
                 targetAttr: 'two'
+            }
+        ]
+    },
+    two: {
+        publicPath: 'technology/2/',
+        imgUrlArr: ['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'],
+        // 图片标记点
+        markList: [
+            {
+                name: 'landMark',
+                imgUrl: 'other/landmark.png',
+                wh: [0.05, 0.05], // 平面宽高
+                position: [0, 0, 0],
+                rotation: [0, 0, 0], //旋转角度
+                targetAttr: 'one'
+            },
+            {
+                name: 'landMark',
+                imgUrl: 'other/landmark.png',
+                wh: [0.05, 0.05], // 平面宽高
+                position: [0, -0.16, -0.12],
+                rotation: [1.61, 0, 0], //旋转角度
+                targetAttr: 'one'
             }
         ]
     }
@@ -68,7 +91,7 @@ function setMaterialCube(infoObj) {
 }
 
 function setLardMarkFn(markData) {
-    const { imgUrl, wh, position, rotation } = markData
+    const { imgUrl, wh, position, rotation, targetAttr } = markData
     // 创建 geometry 与 material
     const geometry = new THREE.PlaneGeometry(...wh);
     // 材料是要贴图的
@@ -81,13 +104,49 @@ function setLardMarkFn(markData) {
         transparent: true,
     })
     const plane = new THREE.Mesh(geometry, material);
+    // plane 是地标
+    plane.name = 'mark'
     plane.position.set(...position)
     plane.rotation.set(...rotation)
+
+    // 设置自定义属性，方便点击遍历的时候，知道切换到哪一个场景
+    plane.userData.attr = targetAttr
 
     scene.add(plane);
     // guiMove 
     // guiMove(plane);
 }
 
+// 点击函数
+function bindClick() {
+    //  raycaster 光线投射用于进行鼠标拾取
+    const raycaster = new THREE.Raycaster();
+    const pointer = new THREE.Vector2();
+
+    window.addEventListener('click', (event) => {
+        pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
+        pointer.y = - (event.clientY / window.innerHeight) * 2 + 1;
+
+        // 通过摄像机和鼠标位置更新射线
+        raycaster.setFromCamera(pointer, camera);
+        // 计算物体和射线的焦点,返回一个包含所有相交结果的数组 (intersects
+        const intersects = raycaster.intersectObjects(scene.children);
+        //         该方法返回一个包含所有相交结果的数组 (intersects)。每个元素都是一个对象，包含了关于交点的详细信息，如：
+        // point：交点的世界坐标。
+        // object：被击中的3D对象。
+        // distance：从射线起点到交点的距离。
+        // face（如果适用）：被击中的多边形面。
+        // uv（如果适用）：交点在纹理上的 UV 坐标。
+        console.log('intersects', intersects);
+        const markOBJ = intersects.find((item) => item.object.name === 'mark')
+        // 点击之后，切换纹理
+        // const infoObj = sceneInfoObj
+        // 切换贴图场景
+        const nextScene = markOBJ.object.userData.attr
+        setMaterialCube(sceneInfoObj[nextScene]);
+    })
+}
+
 const myCube = createCube();
-setMaterialCube(sceneInfoObj.one)
+setMaterialCube(sceneInfoObj.one);
+bindClick();
