@@ -1,9 +1,11 @@
 import { scene } from './utils/main.js'
 import * as THREE from 'three'
 
-// 创建场景信息
-// 数据影响视图
-// 定义属性和值
+// 1. 创建场景信息  数据影响视图
+// 2. 定义数据对象相关的属性和值
+// 3. 创建纹理贴图函数
+// 4. 地上热点标记函数
+// 5. dat.gui 工具函数调整位置
 // 准备贴图
 const sceneInfoObj = {
     // 第一个场景
@@ -47,6 +49,7 @@ function setMaterialCube(infoObj) {
     // 遍历贴图
     const materialArr = imgUrlArr.map(imgStr => {
         const texture = textureLoader.load(imgStr);
+        // 空间颜色加深
         texture.colorSpace = THREE.SRGBColorSpace
         return new THREE.MeshBasicMaterial({
             map: texture,
@@ -56,9 +59,29 @@ function setMaterialCube(infoObj) {
 
     myCube.material = materialArr // 覆盖
 
+    // 贴地标
+    markList.forEach(item => {
+        if (item.name === 'landMark') setLardMarkFn(item);
+    });
+
+}
+
+function setLardMarkFn(markData) {
+    const { imgUrl, wh, position, rotation } = markData
+    // 创建 geometry 与 material
+    const geometry = new THREE.PlaneGeometry(...wh);
+    // 材料是要贴图的
+    // const material = new THREE.MeshBasicMaterial({ color: 0xffff00, side: THREE.DoubleSide });
+    const textureLoader = new THREE.TextureLoader()
+    const texture = textureLoader.load(imgUrl)
+    const material = new THREE.MeshBasicMaterial({
+        map: texture,
+        side: THREE.DoubleSide,
+        transparent: true,
+    })
+    const plane = new THREE.Mesh(geometry, material);
+    scene.add(plane);
 }
 
 const myCube = createCube();
-setMaterialCube(sceneInfoObj.one).then(() => {
-    console.log('贴图成功',);
-});
+setMaterialCube(sceneInfoObj.one)
