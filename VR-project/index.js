@@ -8,7 +8,7 @@ import * as THREE from 'three'
 const sceneInfoObj = {
     // 第一个场景
     one: {
-        publicPath: 'technology/2',
+        publicPath: 'technology/1/',
         imgUrlArr: ['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'],
         // 图片标记点
         markList: [
@@ -36,7 +36,7 @@ function createCube() {
 
 // 准备创建纹理贴图函数
 // 创建贴图函数
-async function setMaterialCube(infoObj) {
+function setMaterialCube(infoObj) {
     const { publicPath, imgUrlArr, markList } = infoObj
     console.log('publicPath', imgUrlArr);
     // 加载2d 纹理
@@ -44,14 +44,14 @@ async function setMaterialCube(infoObj) {
     textureLoader.setPath(publicPath)
 
     // 遍历贴图
-    const materialArr = Promise.all(imgUrlArr.map(async imgStr => {
-        const texture = await textureLoader.load(imgStr);
+    const materialArr = imgUrlArr.map( imgStr => {
+        const texture = textureLoader.load(imgStr);
         texture.colorSpace = THREE.SRGBColorSpace
         return new THREE.MeshBasicMaterial({
             map: texture,
             side: THREE.DoubleSide
         })
-    }))
+    })
 
     myCube.material = materialArr // 覆盖
 
