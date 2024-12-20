@@ -1,66 +1,16 @@
 import { camera, scene } from './utils/main.js'
 import * as THREE from 'three'
 import guiMove from './utils/gui'
+import { createCube } from './createScene'
+import { sceneInfoObj } from './sceneInfoObj/index.js'
+
 // 1. 创建场景信息  数据影响视图
 // 2. 定义数据对象相关的属性和值
 // 3. 创建纹理贴图函数
 // 4. 地上热点标记函数
 // 5. dat.gui 工具函数调整位置
 // 准备贴图
-let count = 0;
-const sceneInfoObj = {
-    // 第一个场景
-    one: {
-        publicPath: 'technology/1/',
-        imgUrlArr: ['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'],
-        // 图片标记点
-        markList: [
-            {
-                name: 'landMark',
-                imgUrl: 'other/landmark.png',
-                wh: [0.05, 0.05], // 平面宽高
-                position: [-0.21, -0.16, -0.12],
-                rotation: [1.61, 0, 0], //旋转角度
-                targetAttr: 'two'
-            }
-        ]
-    },
-    two: {
-        publicPath: 'technology/2/',
-        imgUrlArr: ['px.jpg', 'nx.jpg', 'py.jpg', 'ny.jpg', 'pz.jpg', 'nz.jpg'],
-        // 图片标记点
-        markList: [
-            {
-                name: 'landMark',
-                imgUrl: 'other/landmark.png',
-                wh: [0.05, 0.05], // 平面宽高
-                position: [-0.36, -0.16, -0.16],
-                rotation: [1.55, 0, 0], //旋转角度
-                targetAttr: 'three'
-            },
-            {
-                name: 'landMark',
-                imgUrl: 'other/landmark.png',
-                wh: [0.05, 0.05], // 平面宽高
-                position: [0.42, -0.25, -0.25],
-                rotation: [1.55, 0, 0], //旋转角度
-                targetAttr: 'one'
-            }
-        ]
-    }
-}
-
-
-// 创建底层立方体
-function createCube() {
-    const geometry = new THREE.BoxGeometry(1, 1, 1);
-    const material = new THREE.MeshBasicMaterial({ color: 0x00ff00, side: THREE.DoubleSide })
-    const cube = new THREE.Mesh(geometry, material);
-    // 渲染体颜色太浅，贴图图片翻转，要对立方体进行一个缩放
-    cube.scale.set(1, 1, -1)
-    scene.add(cube);
-    return cube;
-}
+let count = 0; //用于测试代码
 
 // Group 组的概念
 // 使得组中对象在语法上的结构更加清晰。
@@ -97,9 +47,6 @@ function setMaterialCube(infoObj) {
     markList.forEach(item => {
         if (item.name === 'landMark') setLardMarkFn(item);
     });
-
-    // TODO 不知道咋
-    // scene.add(group);
 }
 
 // 地标贴图函数
@@ -128,12 +75,12 @@ function setLardMarkFn(markData) {
     group.add(plane);
     scene.add(group);
     // guiMove 
-    guiMove(plane);
+    // guiMove(plane);
 }
 
 // 移除地标贴图函数
 function removeLardMarkFn() {
-    console.log('99', count++, group.children);
+    // console.log('99', count++, group.children);
     if (group.children.length > 0) {
         const copyGroup = [...group.children];
         copyGroup.forEach(item => {
@@ -169,9 +116,7 @@ function bindClick() {
         const markOBJ = intersects.find((item) => item.object.name === 'mark')
 
         // 点击之后，切换纹理
-        // const infoObj = sceneInfoObj
         // 切换贴图场景
-
         let nextScene;
         if (nextScene = markOBJ?.object.userData.attr) {
             setMaterialCube(sceneInfoObj[nextScene]);
